@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Health Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f6f9fc; margin:0; }
+    .wrap { max-width: 800px; margin: 40px auto; background:#fff; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.08); padding:24px; }
+    h1 { margin:0 0 6px; color:#1f2937; }
+    p.note { margin: 4px 0 16px; color:#6b7280; font-size: 14px; }
+    #chat { height: 420px; border:1px solid #e5e7eb; border-radius:10px; padding:12px; overflow-y:auto; background:#fafafa; }
+    .msg { margin:8px 0; }
+    .you { color:#2563eb; }
+    .bot { color:#059669; }
+    .bar { display:flex; gap:8px; margin-top:12px; }
+    input { flex:1; padding:12px; border:1px solid #d1d5db; border-radius:8px; outline:none; }
+    button { padding:12px 16px; border:none; border-radius:8px; background:#10b981; color:white; cursor:pointer; }
+    button:hover { background:#0ea371; }
+    .hint { font-size:13px; color:#6b7280; margin-top:10px; }
+    code { background:#f3f4f6; padding:2px 6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>AI Health Chatbot</h1>
+    <p class="note">Ask about symptoms, prevention, vaccines, or live outbreak info.</p>
+
+    <div id="chat"></div>
+
+    <div class="bar">
+      <input id="q" placeholder="Type your question... e.g., 'How can I prevent malaria?'" />
+      <button onclick="sendMsg()">Send</button>
+    </div>
+
+    <div class="hint">
+      <b>Try:</b>
+      <code>What are the symptoms of dengue?</code> •
+      <code>How can I reduce stress?</code> •
+      <code>Check slots 700001 31-08-2025</code> •
+      <code>WHO outbreak news</code> •
+      <code>covid update</code>
+    </div>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const q = document.getElementById('q');
+
+    function append(role, text) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + role;
+      div.innerHTML = `<b>${role === 'you' ? 'You' : 'Bot'}:</b> ${text}`;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendMsg() {
+      const text = q.value.trim();
+      if (!text) return;
+      append('you', text);
+      q.value = '';
+      try {
+        const res = await fetch('/get', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        append('bot', data.reply);
+      } catch (e) {
+        append('bot', 'Sorry, something went wrong.');
+      }
+    }
+
+    q.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMsg();
+    });
+  </script>
+</body>
+</html>
